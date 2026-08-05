@@ -1,6 +1,6 @@
 # Docker Networking na VPS Hostinger
 
-**Data:** 04/08/2026
+**Data:** 04/08/2026 (atualizado 05/08/2026)
 **Categoria:** Desenvolvimento / DevOps
 
 ## Problema
@@ -39,6 +39,46 @@ services:
 networks:
   shared:
     external: true
+```
+
+## SSH Tunnel para Container (Descoberta 05/08/2026)
+
+### Problema
+`ssh -L 8787:localhost:8787` encaminha para porta do **HOST**, mas serviços rodam dentro do **container**. Resultado: `Connection refused`.
+
+### Solução: Usar IP do container no tunnel
+```bash
+# Descobrir IP do container
+cat /etc/hosts
+# Exemplo: 172.16.1.2  e040958aa5f5
+
+# Tunnel correto
+ssh -L 8787:172.16.1.2:8787 root@76.13.29.94 -N
+```
+
+### Script mobile (Termux)
+```bash
+#!/data/data/com.termux/files/usr/bin/bash
+VPS_IP="76.13.29.94"
+VPS_USER="root"
+CONTAINER_IP="172.16.1.2"   # IP do container
+LOCAL_PORT="8787"
+URL="http://localhost:${LOCAL_PORT}"
+
+pkill -f "ssh.*${LOCAL_PORT}:${CONTAINER_IP}:${LOCAL_PORT}" 2>/dev/null
+ssh -o StrictHostKeyChecking=no -o ExitOnForwardFailure=yes \
+    -o ServerAliveInterval=10 \
+    -L ${LOCAL_PORT}:${CONTAINER_IP}:${LOCAL_PORT} \
+    -N ${VPS_USER}@${VPS_IP} &
+```
+
+### Verificação
+```bash
+# De dentro do container
+cat /etc/hosts  # Mostra IP do container (ex: 172.16.1.2)
+
+# Testar se porta está escutando no container
+python3 -c "import socket; s=socket.socket(); s.settimeout(2); r=s.connect_ex(('172.16.1.2', 8787)); print('UP' if r==0 else 'DOWN'); s.close()"
 ```
 
 ## Proxy Hostinger (Portas Externas)
