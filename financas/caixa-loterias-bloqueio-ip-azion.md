@@ -7,10 +7,11 @@
 - **Ferramentas testadas**: curl, DuckDuckGo HTML, crawl4ai (CDP local), Scrapling (DynamicFetcher + CDP local) — todas 403
 - **O bloqueio é por IP de saída**, não por fingerprint/navegador
 
-## Workaround atual
-- **Fonte alternativa**: `dezeneiro.com.br` (agregador de estimativas da CAIXA) — ainda funcional
-- **Fallback**: DuckDuckGo HTML search (resultados orgânicos de terceiros)
-- **Job Lotofácil**: pausado (`cronjob pause f285e2c5f912`) até resolver fonte
+## Workaround atual (31/08/2026)
+- **Fonte alternativa (confiável)**: `loteriascaixa-api.herokuapp.com/api/lotofacil` — API JSON pública, sem dependências (urllib stdlib)
+- **Cronjob reativado**: `lotofacil-premium-alert` (job_id: `77dfc207dcbc`) — 4x/dia, watchdog pattern (silent até R$ 10M)
+- **Fallback anterior**: `dezeneiro.com.br` (substituído pela API mais estruturada)
+- **Script**: `/opt/data/scripts/lotofacil_premium.py` — Python puro, zero deps
 
 ## Opções para resolver
 1. **Proxy/VPN com IP brasileiro limpo** — rodar Chrome via proxy (fornecido pelo usuário)
