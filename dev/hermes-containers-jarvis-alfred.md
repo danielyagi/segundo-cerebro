@@ -1,6 +1,6 @@
 # Hermes Containers: Jarvis (i3a1) e Alfred (bc6r)
 
-> Atualizado em: 03/09/2026
+> Atualizado em: 04/09/2026
 
 ## Visão Geral
 
@@ -68,7 +68,7 @@ t.close()
 docker rename <old-name> <new-name>
 ```
 
-### Pull + Restart (update)
+|### Pull + Restart (update)
 ```bash
 docker pull ghcr.io/hostinger/hvps-hermes-agent:latest
 docker restart <container-name>
@@ -78,3 +78,38 @@ docker restart <container-name>
 ```bash
 docker exec <container-name> hermes --version
 ```
+
+## Configuração de Sub-Agents via Env Vars (04/09/2026)
+
+O container `alfred` (bc6r) utiliza env vars do `.env` para definir provedor e modelos:
+
+| Env Var | Valor | Função |
+|---------|-------|--------|
+| `LLM_PROVIDER` | `ollama` | Provider global |
+| `OLLAMA_BASE_URL` | `http://ollama:11434/v1` | Endpoint OpenAI-compatível do Ollama |
+| `MODEL_NAME` | `hermes3:8b` | Orquestrador principal |
+| `CODE_MODEL_NAME` | `qwen2.5-coder:7b` | Sub-agent de código |
+| `VISION_MODEL_NAME` | `qwen2.5vl:7b` | Sub-agent de visão |
+
+**Modelos no Ollama (container `ollama-1in7-ollama-1`):**
+
+| Modelo | ID | Tamanho |
+|--------|----|---------|
+| `hermes3:8b` | 4f6b83f30b62 | 4.7 GB |
+| `qwen2.5-coder:7b` | dae161e27b0e | 4.7 GB |
+| `qwen2.5vl:7b` | 5ced39dfa4ba | 6.0 GB |
+
+**Nota:** Apenas 3 modelos carregados. Não há 4º modelo para um 3º sub-agent "restante". Opção: fazer pull de `qwen2.5:7b` (base, texto puro, ~4.7 GB).
+
+### Redes Docker
+
+O container `alfred` está conectado a 3 redes externas:
+- `ollama-1in7_default` — acesso ao Ollama em `http://ollama:11434`
+- `browserless-qxtx_default` — acesso ao Browserless
+- `chrome_default` — acesso ao Chrome
+
+### Arquivos de Configuração
+
+- Compose: `/docker/hermes-agent-bc6r/docker-compose.yml` (fora do bind mount)
+- Env: `/docker/hermes-agent-bc6r/.env`
+- Dados: `/docker/hermes-agent-bc6r/data/` → montado em `/opt/data`
